@@ -85,26 +85,19 @@ size_t GraphWorker::findMaxNodesArrayFromNode(size_t node) {
     std::queue<size_t> q;
     q.push(node);
 
-//    std::cout << std::endl << "node: " << node << std::endl;
-
     while (!q.empty()) {
         size_t x = q.front();
         q.pop();
-//        std::cout << std::endl << "x: " << x << std::endl;
 
         if (!used[x] && !marked[x]) {
             used[x] = true;
             marked[x] = true;
-//            std::cout << "answer: " << g->getNode(x) << " + " << answer << std::endl;
             answer += g->getNode(x);
         }
 
         for (size_t y = 0; y < g->getSize(); y++) {
-//            std::cout << "lnk[" << x << ", " << y << "]: " << g->getLink(y, x) << " | " << g->getLink(x, y) << std::endl;
             if (g->getLink(x, y) || g->getLink(y, x)) {
-//                std::cout << "marked[" << y << "]: " << (marked[y] ? "+" : "-") << std::endl;
                 if (!marked[y]) {
-//                    std::cout << "y: " << y << std::endl;
                     marked[y] = used[x];
                     q.push(y);
                 }
@@ -112,22 +105,14 @@ size_t GraphWorker::findMaxNodesArrayFromNode(size_t node) {
         }
     }
 
-//    std::cout << "answer: " << answer << std::endl;
     return answer;
 }
 
 size_t GraphWorker::findMaxNodesArray() {
-    size_t answer = 0, node;
-//    std::cout << std::endl;
+    size_t answer = 0;
     for (size_t i = 0; i < g->getSize(); i++) {
-        size_t new_ = findMaxNodesArrayFromNode(i);
-//        std::cout << i << ": " << new_ << std::endl;
-        answer = std::max(answer, new_);
-        if (new_ == answer) {
-            node = i;
-        }
+        answer = std::max(answer, findMaxNodesArrayFromNode(i));
     }
-//    std::cout << "(" << node << ") ";
 
     return answer;
 }
