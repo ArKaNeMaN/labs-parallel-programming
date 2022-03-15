@@ -1,0 +1,7 @@
+<directed?> <from zero?>
+
+<nodes count (N)>
+
+<node 1 weight> ... <node N weight>
+
+<links [node1, node2, weight]>
