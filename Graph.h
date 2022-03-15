@@ -22,7 +22,7 @@ private:
     bool directed;
 
 public:
-    explicit Graph(size_t, bool);
+    explicit Graph(size_t, bool = false);
 
     void setNode(size_t);
     void setNode(size_t, weight_t);
@@ -36,7 +36,8 @@ public:
     [[nodiscard]]
     size_t getSize() const;
 
-    static Graph* readFromFile(const std::string&, const bool old = false);
+    static Graph* readFromFile(const std::string&);
+    Graph* saveToFile(const std::string &filePath, bool pretty = false);
 };
 
 #endif //CPP_FINDMAXGRAPHPART_GRAPH_H

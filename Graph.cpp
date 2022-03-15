@@ -55,7 +55,7 @@ size_t Graph::getSize() const {
     return size;
 }
 
-Graph* Graph::readFromFile(const std::string& filePath, const bool old = false) {
+Graph* Graph::readFromFile(const std::string& filePath) {
     std::ifstream fs;
     fs.open(filePath.c_str(), std::_S_in);
 
@@ -76,7 +76,7 @@ Graph* Graph::readFromFile(const std::string& filePath, const bool old = false) 
         g->setNode(i, w);
     }
 
-    for (size_t i = 0; i < size; i++) {
+    while (!fs.eof()) {
         size_t x, y;
         weight_t w;
         fs >> x >> y >> w;
@@ -86,11 +86,53 @@ Graph* Graph::readFromFile(const std::string& filePath, const bool old = false) 
         }
 
         g->setLink(x, y, w);
+    }
+    fs.close();
 
-        if (!isDirected) {
-            g->setLink(y, x, w);
+    return g;
+}
+
+Graph* Graph::saveToFile(const std::string& filePath, const bool pretty) {
+    const auto delimiter = ' ';
+
+    std::ofstream fs;
+    fs.open(filePath.c_str(), std::_S_out);
+
+    if (!fs.is_open()) {
+        printf("Can`t open file '%s'.", filePath.c_str());
+        return nullptr;
+    }
+
+    fs << delimiter << directed << delimiter << 1 << delimiter;
+    if (pretty) {
+        fs << std::endl;
+    }
+
+    fs << size << delimiter;
+    if (pretty) {
+        fs << std::endl << std::endl;
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        fs << getNode(i) << delimiter;
+    }
+    if (pretty) {
+        fs << std::endl << std::endl;
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        for (size_t j = directed ? 0 : i; j < size; j++) {
+            weight_t w = getLink(i, j);
+            if (w > 0) {
+                fs  << i << delimiter << j << delimiter << w << delimiter;
+                if (pretty) {
+                    fs << std::endl;
+                }
+            }
         }
     }
 
-    return g;
+    fs.close();
+
+    return this;
 }
