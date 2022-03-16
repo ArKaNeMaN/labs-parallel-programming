@@ -85,25 +85,30 @@ size_t GraphWorker::findMaxNodesArrayFromNode(size_t node) {
     std::queue<size_t> q;
     q.push(node);
 
+    // Обход в ширину от начальной вершины
     while (!q.empty()) {
         size_t x = q.front();
         q.pop();
 
+        // Если не рядом и не использована, то помечать и прбавлять её вес
         if (!used[x] && !marked[x]) {
             used[x] = true;
             marked[x] = true;
             answer += g->getNode(x);
         }
 
+        // Для каждой соседней вершины
         for (size_t y = 0; y < g->getSize(); y++) {
-            if (g->getLink(x, y) || g->getLink(y, x)) {
-                if (!marked[y]) {
-                    marked[y] = used[x];
-                    q.push(y);
-                }
+            if (!marked[y] && (g->getLink(x, y) || g->getLink(y, x))) {
+                // Если не помечена, то пушить в очередь и помечать, если текущая вершина использована
+                marked[y] = used[x];
+                q.push(y);
             }
         }
     }
+
+    marked.clear();
+    used.clear();
 
     return answer;
 }
