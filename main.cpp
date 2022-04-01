@@ -18,7 +18,8 @@ void runFromSeeds() {
         std::cout << size << ' ' << seed << ' ';
 
         time_t t = time(nullptr);
-        size_t answer = gw->findMaxNodesArray();
+        size_t answer = gw->mtFindMaxNodesArray();
+//        size_t answer = gw->findMaxNodesArray();
         time_t t2 = time(nullptr);
 
         delete gw->getGraph();
@@ -40,7 +41,7 @@ int main() {
         std::cout << "Answer: " << gw->findMaxNodesArray() << std::endl << std::endl;
     }
     else {
-        std::cout << "Can`t run control test."
+        std::cout << "Can`t run control test.";
     }
 
     // Запуск тестов

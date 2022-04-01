@@ -122,4 +122,33 @@ size_t GraphWorker::findMaxNodesArray() {
     return answer;
 }
 
+size_t GraphWorker::mtFindMaxNodesArray(size_t threadsCount) {
+    SharedQueue<size_t> q, answers;
+    for (size_t i = 0; i < g->getSize(); i++) {
+        q.push_back(i);
+    }
+
+    std::vector<std::thread> threads;
+    for (size_t i = 0; i < threadsCount; i++) {
+        std::thread th([&] (GraphWorker* gw) {
+            size_t node = q.front();
+            q.pop_front();
+            answers.push_back(gw->findMaxNodesArrayFromNode(node));
+        }, this);
+        threads.push_back(th);
+    }
+
+    for (auto & thread : threads) {
+        thread.join();
+    }
+
+    size_t answer = 0;
+    while (!answers.empty()) {
+        answer = std::max(answers.front(), answer);
+        answers.pop_front();
+    }
+
+    return answer;
+}
+
 
