@@ -2,7 +2,7 @@
 #include "Graph.h"
 #include "GraphWorker.h"
 
-void runFromSeeds() {
+void runFromSeeds(bool mt = false, size_t thCount = 4) {
     std::ifstream fsi;
     std::ofstream fso;
     fsi.open("../tests/seeds.txt", std::_S_in);
@@ -17,9 +17,13 @@ void runFromSeeds() {
         gw->fillRandom(seed);
         std::cout << size << ' ' << seed << ' ';
 
+        size_t answer;
         time_t t = time(nullptr);
-        size_t answer = gw->mtFindMaxNodesArray();
-//        size_t answer = gw->findMaxNodesArray();
+        if (mt) {
+            answer = gw->mtFindMaxNodesArray(thCount);
+        } else {
+            answer = gw->findMaxNodesArray();
+        }
         time_t t2 = time(nullptr);
 
         delete gw->getGraph();
@@ -45,7 +49,8 @@ int main() {
     }
 
     // Запуск тестов
-    runFromSeeds();
+    runFromSeeds(true, 64);
+    runFromSeeds(false);
 
     return 0;
 }

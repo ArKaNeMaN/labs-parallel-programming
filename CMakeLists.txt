@@ -8,4 +8,3 @@ set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package( Threads REQUIRED )
 
 add_executable(cpp_FindMaxGraphPart main.cpp Graph.cpp Graph.h GraphWorker.cpp GraphWorker.h SharedQueue.h)
-target_link_libraries( main.cpp ${CMAKE_THREAD_LIBS_INIT} )

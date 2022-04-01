@@ -4,7 +4,7 @@
 
 #include "GraphWorker.h"
 
-GraphWorker::GraphWorker(Graph* g) {
+GraphWorker::GraphWorker(Graph *g) {
     this->g = g;
 }
 
@@ -30,6 +30,7 @@ GraphWorker *GraphWorker::print() {
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cert-msc50-cpp"
+
 GraphWorker *GraphWorker::fillRandom(int seed) {
     std::srand(seed);
 
@@ -64,6 +65,7 @@ GraphWorker *GraphWorker::fillRandom(int seed) {
 
     return this;
 }
+
 #pragma clang diagnostic pop
 
 Graph *GraphWorker::getGraph() {
@@ -123,29 +125,40 @@ size_t GraphWorker::findMaxNodesArray() {
 }
 
 size_t GraphWorker::mtFindMaxNodesArray(size_t threadsCount) {
+    using namespace std::chrono_literals;
+
     SharedQueue<size_t> q, answers;
+
     for (size_t i = 0; i < g->getSize(); i++) {
-        q.push_back(i);
+        q.push(i);
+//        std::cout << i << std::endl;
     }
+
+    GraphWorker_ThreadParams<size_t, size_t> params{};
+    params.gw = this;
+    params.itemsQueue = &q;
+    params.answersQueue = &answers;
 
     std::vector<std::thread> threads;
     for (size_t i = 0; i < threadsCount; i++) {
-        std::thread th([&] (GraphWorker* gw) {
-            size_t node = q.front();
-            q.pop_front();
-            answers.push_back(gw->findMaxNodesArrayFromNode(node));
-        }, this);
-        threads.push_back(th);
+        std::thread th = std::thread([&](GraphWorker_ThreadParams<size_t, size_t> params) {
+            size_t node;
+            while (params.itemsQueue->try_pop(node, 100ms)) {
+                size_t ans = params.gw->findMaxNodesArrayFromNode(node);
+                params.answersQueue->push(ans);
+//                std::cout << node << ':' << ans << std::endl;
+            }
+        }, params);
+        threads.push_back(std::move(th));
     }
 
-    for (auto & thread : threads) {
+    for (auto &thread: threads) {
         thread.join();
     }
 
     size_t answer = 0;
-    while (!answers.empty()) {
-        answer = std::max(answers.front(), answer);
-        answers.pop_front();
+    while (answers.size() > 0) {
+        answer = std::max(answers.pop(), answer);
     }
 
     return answer;
