@@ -42,15 +42,23 @@ int main() {
     if (g != nullptr) {
         auto* gw = new GraphWorker(g);
         gw->print()->getGraph()->saveToFile("../tests/saved.txt", true);
-        std::cout << "Answer: " << gw->findMaxNodesArray() << std::endl << std::endl;
+        std::cout << "Answer: " << gw->findMaxNodesArray();
     }
     else {
         std::cout << "Can`t run control test.";
     }
 
+    std::cout << std::endl << std::endl;
+
     // Запуск тестов
+    std::cout << "mt4:" << std::endl;
+    runFromSeeds(true, 4);
+
+    std::cout << "mt64:" << std::endl;
     runFromSeeds(true, 64);
-    runFromSeeds(false);
+
+    std::cout << std::endl <<  "mt1:" << std::endl;
+    runFromSeeds(true, 1);
 
     return 0;
 }
