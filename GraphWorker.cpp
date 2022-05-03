@@ -116,27 +116,21 @@ size_t GraphWorker::findMaxNodesArrayFromNode(size_t node) {
 }
 
 size_t GraphWorker::findMaxNodesArray(int threadsNum) {
-    std::vector<size_t> answers;
-    answers.resize(g->getSize());
+    size_t answer = 0;
 
     omp_set_num_threads(threadsNum);
-    #pragma omp parallel default(none) shared(answers)
+    #pragma omp parallel default(none) shared(answer)
     {
         #pragma omp for
         for (size_t i = 0; i < g->getSize(); i++) {
             size_t ans = findMaxNodesArrayFromNode(i);
             #pragma omp critical
             {
-                answers.push_back(ans);
+                answer = std::max(answer, ans);
             };
         }
     }
     #pragma omp barrier
-
-    size_t answer = 0;
-    for (size_t &i: answers) {
-        answer = std::max(answer, i);
-    }
 
     return answer;
 }
