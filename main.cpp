@@ -2,7 +2,7 @@
 #include "Graph.h"
 #include "GraphWorker.h"
 
-void runFromSeeds(bool mt = false, size_t thCount = 4) {
+void runFromSeeds(int threadsNum) {
     std::ifstream fsi;
     std::ofstream fso;
     fsi.open("../tests/seeds.txt", std::_S_in);
@@ -13,17 +13,13 @@ void runFromSeeds(bool mt = false, size_t thCount = 4) {
         int seed;
         fsi >> size >> seed;
 
-        auto* gw = new GraphWorker(new Graph(size));
+        auto *gw = new GraphWorker(new Graph(size));
         gw->fillRandom(seed);
         std::cout << size << ' ' << seed << ' ';
 
         size_t answer;
         time_t t = time(nullptr);
-        if (mt) {
-            answer = gw->mtFindMaxNodesArray(thCount);
-        } else {
-            answer = gw->findMaxNodesArray();
-        }
+        answer = gw->findMaxNodesArray(threadsNum);
         time_t t2 = time(nullptr);
 
         delete gw->getGraph();
@@ -38,27 +34,20 @@ void runFromSeeds(bool mt = false, size_t thCount = 4) {
 
 int main() {
     // Контрольный запуск
-    Graph* g = Graph::readFromFile("../tests/1.txt");
+    Graph *g = Graph::readFromFile("../tests/1.txt");
     if (g != nullptr) {
-        auto* gw = new GraphWorker(g);
+        auto *gw = new GraphWorker(g);
         gw->print()->getGraph()->saveToFile("../tests/saved.txt", true);
         std::cout << "Answer: " << gw->findMaxNodesArray();
-    }
-    else {
+    } else {
         std::cout << "Can`t run control test.";
     }
 
     std::cout << std::endl << std::endl;
 
     // Запуск тестов
-    std::cout << "mt4:" << std::endl;
-    runFromSeeds(true, 4);
-
     std::cout << "mt64:" << std::endl;
-    runFromSeeds(true, 64);
-
-    std::cout << std::endl <<  "mt1:" << std::endl;
-    runFromSeeds(true, 1);
+    runFromSeeds(64);
 
     return 0;
 }

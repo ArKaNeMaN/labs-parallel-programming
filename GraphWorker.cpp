@@ -115,53 +115,28 @@ size_t GraphWorker::findMaxNodesArrayFromNode(size_t node) {
     return answer;
 }
 
-size_t GraphWorker::findMaxNodesArray() {
+size_t GraphWorker::findMaxNodesArray(int threadsNum) {
+    std::vector<size_t> answers;
+    answers.resize(g->getSize());
+
+    omp_set_num_threads(threadsNum);
+    #pragma omp parallel default(none) shared(answers)
+    {
+        #pragma omp for
+        for (size_t i = 0; i < g->getSize(); i++) {
+            size_t ans = findMaxNodesArrayFromNode(i);
+            #pragma omp critical
+            {
+                answers.push_back(ans);
+            };
+        }
+    }
+    #pragma omp barrier
+
     size_t answer = 0;
-    for (size_t i = 0; i < g->getSize(); i++) {
-        answer = std::max(answer, findMaxNodesArrayFromNode(i));
+    for (size_t &i: answers) {
+        answer = std::max(answer, i);
     }
 
     return answer;
 }
-
-size_t GraphWorker::mtFindMaxNodesArray(size_t threadsCount) {
-    using namespace std::chrono_literals;
-
-    SharedQueue<size_t> q, answers;
-
-    for (size_t i = 0; i < g->getSize(); i++) {
-        q.push(i);
-//        std::cout << i << std::endl;
-    }
-
-    GraphWorker_ThreadParams<size_t, size_t> params{};
-    params.gw = this;
-    params.itemsQueue = &q;
-    params.answersQueue = &answers;
-
-    std::vector<std::thread> threads;
-    for (size_t i = 0; i < threadsCount; i++) {
-        std::thread th = std::thread([&](GraphWorker_ThreadParams<size_t, size_t> params) {
-            size_t node;
-            while (params.itemsQueue->try_pop(node, 100ms)) {
-                size_t ans = params.gw->findMaxNodesArrayFromNode(node);
-                params.answersQueue->push(ans);
-//                std::cout << node << ':' << ans << std::endl;
-            }
-        }, params);
-        threads.push_back(std::move(th));
-    }
-
-    for (auto &thread: threads) {
-        thread.join();
-    }
-
-    size_t answer = 0;
-    while (answers.size() > 0) {
-        answer = std::max(answers.pop(), answer);
-    }
-
-    return answer;
-}
-
-

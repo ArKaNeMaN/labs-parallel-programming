@@ -12,6 +12,7 @@
 #include <limits>
 #include <queue>
 #include <chrono>
+#include <omp.h>
 
 class GraphWorker {
 private:
@@ -23,8 +24,7 @@ public:
     GraphWorker *print();
     GraphWorker *fillRandom(int seed = 0);
     Graph *getGraph();
-    size_t findMaxNodesArray();
-    size_t mtFindMaxNodesArray(size_t threadsCount = 8);
+    size_t findMaxNodesArray(int threadsNum = 8);
 
     size_t findMaxNodesArrayFromNode(size_t node);
 };
