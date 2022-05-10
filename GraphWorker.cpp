@@ -115,15 +115,6 @@ size_t GraphWorker::findMaxNodesArrayFromNode(size_t node) {
     return answer;
 }
 
-size_t GraphWorker::findMaxNodesArray() {
-    size_t answer = 0;
-    for (size_t i = 0; i < g->getSize(); i++) {
-        answer = std::max(answer, findMaxNodesArrayFromNode(i));
-    }
-
-    return answer;
-}
-
 size_t GraphWorker::mtFindMaxNodesArray(size_t threadsCount) {
     using namespace std::chrono_literals;
 
@@ -131,7 +122,6 @@ size_t GraphWorker::mtFindMaxNodesArray(size_t threadsCount) {
 
     for (size_t i = 0; i < g->getSize(); i++) {
         q.push(i);
-//        std::cout << i << std::endl;
     }
 
     GraphWorker_ThreadParams<size_t, size_t> params{};
@@ -146,7 +136,6 @@ size_t GraphWorker::mtFindMaxNodesArray(size_t threadsCount) {
             while (params.itemsQueue->try_pop(node, 100ms)) {
                 size_t ans = params.gw->findMaxNodesArrayFromNode(node);
                 params.answersQueue->push(ans);
-//                std::cout << node << ':' << ans << std::endl;
             }
         }, params);
         threads.push_back(std::move(th));
@@ -159,6 +148,15 @@ size_t GraphWorker::mtFindMaxNodesArray(size_t threadsCount) {
     size_t answer = 0;
     while (answers.size() > 0) {
         answer = std::max(answers.pop(), answer);
+    }
+
+    return answer;
+}
+
+size_t GraphWorker::findMaxNodesArray() {
+    size_t answer = 0;
+    for (size_t i = 0; i < g->getSize(); i++) {
+        answer = std::max(answer, findMaxNodesArrayFromNode(i));
     }
 
     return answer;
