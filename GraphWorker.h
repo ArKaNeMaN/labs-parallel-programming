@@ -7,6 +7,7 @@
 
 #include "SharedQueue.h"
 #include "Graph.h"
+#include <mpi.h>
 #include <thread>
 #include <iostream>
 #include <limits>
@@ -24,7 +25,6 @@ public:
     GraphWorker *fillRandom(int seed = 0);
     Graph *getGraph();
     size_t findMaxNodesArray();
-    size_t mtFindMaxNodesArray(size_t threadsCount = 8);
 
     size_t findMaxNodesArrayFromNode(size_t node);
 };

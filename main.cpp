@@ -1,10 +1,14 @@
 #include <iostream>
+#include <mpi.h>
 #include "Graph.h"
 #include "GraphWorker.h"
 
-void runFromSeeds(bool mt = false, size_t thCount = 4) {
+int mpi_rank;
+
+void runFromSeeds() {
     std::ifstream fsi;
     std::ofstream fso;
+
     fsi.open("../tests/seeds.txt", std::_S_in);
     fso.open("../tests/seeds-answers.txt", std::_S_out);
 
@@ -15,50 +19,52 @@ void runFromSeeds(bool mt = false, size_t thCount = 4) {
 
         auto* gw = new GraphWorker(new Graph(size));
         gw->fillRandom(seed);
-        std::cout << size << ' ' << seed << ' ';
+        if (mpi_rank == 0) {
+            std::cout << size << ' ' << seed << ' ';
+        }
 
         size_t answer;
-        time_t t = time(nullptr);
-        if (mt) {
-            answer = gw->mtFindMaxNodesArray(thCount);
-        } else {
-            answer = gw->findMaxNodesArray();
-        }
-        time_t t2 = time(nullptr);
+        double t = MPI_Wtime();
+        answer = gw->findMaxNodesArray();
+        double t2 = MPI_Wtime();
 
         delete gw->getGraph();
         delete gw;
 
-        fso << size << ' ' << seed << ' ' << " (ans: " << answer << ", time: " << difftime(t2, t) << ')' << std::endl;
-        std::cout << " (ans: " << answer << ", time: " << difftime(t2, t) << ')' << std::endl;
+        if (mpi_rank == 0) {
+            fso << size << ' ' << seed << ' ' << " (ans: " << answer << ", time: " << t2 - t << ')' << std::endl;
+            std::cout << " (ans: " << answer << ", time: " << t2 - t << ')' << std::endl;
+        }
     }
+
     fsi.close();
     fso.close();
 }
 
 int main() {
-    // Контрольный запуск
-    Graph* g = Graph::readFromFile("../tests/1.txt");
-    if (g != nullptr) {
-        auto* gw = new GraphWorker(g);
-        gw->print()->getGraph()->saveToFile("../tests/saved.txt", true);
-        std::cout << "Answer: " << gw->findMaxNodesArray();
+    MPI_Init(nullptr, nullptr);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+//
+//    if (mpi_rank == 0) {
+//        std::cout << "mpi (4 cores):" << std::endl;
+//    }
+//    runFromSeeds();
+
+    if (mpi_rank == 0) {
+        std::ifstream fsi;
+        fsi.open("../tests/seeds.txt", std::_S_in);
+        size_t size;
+        int seed;
+        fsi >> size >> seed;
+        std::cout << size << ' ' << seed << std::endl;
+        fsi.close();
+    } else {
+        std::cout << "kek" << std::endl;
     }
-    else {
-        std::cout << "Can`t run control test.";
-    }
 
-    std::cout << std::endl << std::endl;
 
-    // Запуск тестов
-    std::cout << "mt4:" << std::endl;
-    runFromSeeds(true, 4);
-
-    std::cout << "mt64:" << std::endl;
-    runFromSeeds(true, 64);
-
-    std::cout << std::endl <<  "mt1:" << std::endl;
-    runFromSeeds(true, 1);
+    MPI_Finalize();
 
     return 0;
 }
