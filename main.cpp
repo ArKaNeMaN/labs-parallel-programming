@@ -4,6 +4,7 @@
 #include "GraphWorker.h"
 
 int mpi_rank;
+int mpi_size;
 
 void runFromSeeds() {
     std::ifstream fsi;
@@ -19,21 +20,21 @@ void runFromSeeds() {
 
         auto* gw = new GraphWorker(new Graph(size));
         gw->fillRandom(seed);
-        if (mpi_rank == 0) {
-            std::cout << size << ' ' << seed << ' ';
+        if (mpi_rank == mpi_size - 1) {
+            std::cout << size << ' ' << seed << ' ' << std::endl;
         }
 
         size_t answer;
-        double t = MPI_Wtime();
+        time_t t = time(nullptr);
         answer = gw->findMaxNodesArray();
-        double t2 = MPI_Wtime();
+        time_t t2 = time(nullptr);
 
         delete gw->getGraph();
         delete gw;
 
-        if (mpi_rank == 0) {
-            fso << size << ' ' << seed << ' ' << " (ans: " << answer << ", time: " << t2 - t << ')' << std::endl;
-            std::cout << " (ans: " << answer << ", time: " << t2 - t << ')' << std::endl;
+        if (mpi_rank == mpi_size - 1) {
+            fso << size << ' ' << seed << ' ' << " (ans: " << answer << ", time: " << difftime(t2, t) << ')' << std::endl;
+            std::cout << " (ans: " << answer << ", time: " << difftime(t2, t) << ')' << std::endl;
         }
     }
 
@@ -45,24 +46,12 @@ int main() {
     MPI_Init(nullptr, nullptr);
 
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-//
-//    if (mpi_rank == 0) {
-//        std::cout << "mpi (4 cores):" << std::endl;
-//    }
-//    runFromSeeds();
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-    if (mpi_rank == 0) {
-        std::ifstream fsi;
-        fsi.open("../tests/seeds.txt", std::_S_in);
-        size_t size;
-        int seed;
-        fsi >> size >> seed;
-        std::cout << size << ' ' << seed << std::endl;
-        fsi.close();
-    } else {
-        std::cout << "kek" << std::endl;
+    if (mpi_rank == mpi_size - 1) {
+        std::cout << "mpi (4 cores):" << std::endl;
     }
-
+    runFromSeeds();
 
     MPI_Finalize();
 
