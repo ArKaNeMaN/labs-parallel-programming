@@ -125,22 +125,27 @@ size_t GraphWorker::findMaxNodesArray() {
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
     if (world_rank == world_size) {
-        std::cout << "[" << world_size << "] findMaxNodesArray" << std::endl;
+//        std::cout << "[" << world_size << "] findMaxNodesArray" << std::endl;
 
         size_t answer = 0;
         for (int i = 0; i < world_rank; i++) {
             size_t val;
-            std::cout << "[" << world_size << "] wait recv from " << i << std::endl;
+//            std::cout << "[" << world_size << "] wait recv from " << i << std::endl;
             MPI_Recv(&val, 1, MPI_UNSIGNED_LONG_LONG, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            std::cout << "[" << world_size << "] recv " << val << " from " << i;
+//            std::cout << "[" << world_size << "] recv " << val << " from " << i;
             if (val > answer) {
                 answer = val;
             }
         }
 
+        // Чтобы процессы не летели вперёд
+        for (int i = 0; i < world_rank; i++) {
+            MPI_Send(&answer, 1, MPI_UNSIGNED_LONG_LONG, i, 0, MPI_COMM_WORLD);
+        }
+
         return answer;
     }
-    std::cout << "[" << world_rank << "] findMaxNodesArray" << std::endl;
+//    std::cout << "[" << world_rank << "] findMaxNodesArray" << std::endl;
 
     size_t count, from, to;
     count = g->getSize() / world_size;
@@ -160,6 +165,8 @@ size_t GraphWorker::findMaxNodesArray() {
 
 //    std::cout << "[" << world_rank << "] val = " << val << std::endl;
     MPI_Send(&val, 1, MPI_UNSIGNED_LONG_LONG, world_size, 0, MPI_COMM_WORLD);
+
+    MPI_Recv(&val, 1, MPI_UNSIGNED_LONG_LONG, world_size, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     return 0;
 }
